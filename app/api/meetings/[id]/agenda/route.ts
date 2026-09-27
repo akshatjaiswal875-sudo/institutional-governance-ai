@@ -1,0 +1,22 @@
+import { NextResponse } from "next/server";
+import { requireUser } from "@/lib/auth";
+import { recordAudit } from "@/lib/audit";
+
+export async function POST(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const { supabase, profile } = await requireUser(["Super Admin", "Meeting Secretary"]);
+    const body = await request.json();
+    const topic = typeof body.topic === "string" ? body.topic.trim() : "";
+    if (!topic) return NextResponse.json({ error: "Topic is required." }, { status: 400 });
+    const { data: meeting } = await supabase.from("meetings").select("id").eq("id", params.id).maybeSingle();
+    if (!meeting) return NextResponse.json({ error: "Meeting not found." }, { status: 404 });
+    const { data, error } = await supabase.from("agenda_items").insert({ meeting_id: params.id, topic, description: body.description ?? null, presenter: body.presenter ?? null, duration_minutes: Number(body.durationMinutes) || null, sort_order: Number(body.sortOrder) || 0 }).select("*").single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    await recordAudit(supabase, profile.id, "ADD_AGENDA", "agenda_items", data.id, { meeting_id: params.id });
+    return NextResponse.json({ data }, { status: 201 });
+  } catch (error) {
+    if (error instanceof Error && error.message === "UNAUTHORIZED") return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    if (error instanceof Error && error.message === "FORBIDDEN") return NextResponse.json({ error: "You do not have permission to add agenda items." }, { status: 403 });
+    return NextResponse.json({ error: "Unable to add agenda item." }, { status: 500 });
+  }
+}

@@ -1,0 +1,1 @@
+export function chunkText(text:string,size=1200,overlap=150):string[]{const out:string[]=[];let start=0;while(start<text.length){const end=Math.min(text.length,start+size);out.push(text.slice(start,end));if(end===text.length)break;start=end-overlap;}return out;}

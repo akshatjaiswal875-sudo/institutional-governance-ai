@@ -1,0 +1,1 @@
+import {ReactNode} from 'react'; export function Card({children,title}:{children:ReactNode;title?:string}){return <section className="card p-5">{title&&<h2 className="mb-4 text-lg font-semibold">{title}</h2>}{children}</section>} export function Badge({children}:{children:ReactNode}){return <span className="badge">{children}</span>}
