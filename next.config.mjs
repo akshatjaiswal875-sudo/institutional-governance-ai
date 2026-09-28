@@ -1,2 +1,13 @@
 /** @type {import('next').NextConfig} */
-const nextConfig={experimental:{serverActions:{bodySizeLimit:'50mb'}}}; export default nextConfig;
+const nextConfig = {
+  output: 'standalone',
+  reactStrictMode: true,
+  poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
+};
+
+export default nextConfig;
